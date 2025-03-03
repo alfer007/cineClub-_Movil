@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "396717763094",
+    "project_id": "cineclub-62898",
+    "storage_bucket": "cineclub-62898.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:396717763094:android:360f01bdd57c676179a337",
+        "android_client_info": {
+          "package_name": "host.exp.exponent"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "396717763094-fmdca94ol8al2kggnktf80skb7q9c92q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBk_S3AYDqwwWHZTU6PIlMEkNrtLz48vc8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "396717763094-5voh1rahnn2jq4769fd26398ilo2fo3t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
