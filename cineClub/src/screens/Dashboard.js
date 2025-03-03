@@ -2,15 +2,17 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebaseConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Dashboard({ navigation }) {
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      await AsyncStorage.removeItem("userUID"); 
       Alert.alert("Sesión cerrada");
-      
+      navigation.replace("Home");
     } catch (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert("Error al cerrar sesión", error.message);
     }
   };
 
