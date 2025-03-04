@@ -10,6 +10,7 @@ import {
   Easing,
   Image,
   Text,
+  StatusBar,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
@@ -132,6 +133,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#1C1C3B" barStyle="light-content" />
       {isLoggingIn ? (
         <View style={styles.animationContainer}>
           <LottieView

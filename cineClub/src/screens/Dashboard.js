@@ -7,6 +7,7 @@ import {
   Alert,
   Image,
   ActivityIndicator,
+  StatusBar,
 } from "react-native";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../../firebaseConfig";
@@ -132,6 +133,7 @@ export default function Dashboard({ navigation }) {
 
   return (
     <View style={styles.container}>
+      <StatusBar hidden={false} backgroundColor="white" barStyle="dark-content"/>
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -289,7 +291,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
-    paddingTop: 50,
+    paddingTop: 10,
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: "row",
