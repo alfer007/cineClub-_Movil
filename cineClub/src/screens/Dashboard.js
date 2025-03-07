@@ -20,9 +20,12 @@ import {
 } from "react-native-popup-menu";
 import { doc, getDoc } from "firebase/firestore";
 import LottieView from "lottie-react-native";
+import UserAvatar from "../components/UserAvatar";
+
 import Inicio from "../components/Inicio";
 import MisEntradas from "../components/MisEntradas";
 import CanjearPuntos from "../components/CanjearPuntos";
+import Reviews from "../components/Reviews";
 
 export default function Dashboard({ navigation }) {
   const [userName, setUserName] = useState(null);
@@ -32,11 +35,17 @@ export default function Dashboard({ navigation }) {
   const [playHomeAnimation, setPlayHomeAnimation] = useState(false);
   const [playTicketAnimation, setPlayTicketAnimation] = useState(false);
   const [playRewardAnimation, setPlayRewardAnimation] = useState(false);
+  const [playReviewdAnimation, setPlayReviewdAnimation] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const storedUID = await AsyncStorage.getItem("userUID");
+        let storedUID = await AsyncStorage.getItem("userUID");
+
+        if (!storedUID && auth.currentUser) {
+          storedUID = auth.currentUser.uid;
+        }
+
         if (storedUID) {
           const userDocRef = doc(db, "usuarios", storedUID);
           const userDocSnap = await getDoc(userDocRef);
@@ -67,6 +76,8 @@ export default function Dashboard({ navigation }) {
         return <MisEntradas />;
       case "Canjear Puntos":
         return <CanjearPuntos />;
+      case "Reviews":
+        return <Reviews />;
       default:
         return <Inicio />;
     }
@@ -82,40 +93,6 @@ export default function Dashboard({ navigation }) {
     }
   };
 
-  const renderAnimation = () => {
-    switch (selectedTab) {
-      case "Inicio":
-        return (
-          <LottieView
-            source={require("../../assets/home-animation.json")}
-            autoPlay
-            loop
-            style={styles.lottie}
-          />
-        );
-      case "Mis Entradas":
-        return (
-          <LottieView
-            source={require("../../assets/ticket-animation.json")}
-            autoPlay
-            loop
-            style={styles.lottie}
-          />
-        );
-      case "Canjear Puntos":
-        return (
-          <LottieView
-            source={require("../../assets/reward-animation.json")}
-            autoPlay
-            loop
-            style={styles.lottie}
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
   const handleTabChange = (tab) => {
     setSelectedTab(tab);
 
@@ -128,12 +105,19 @@ export default function Dashboard({ navigation }) {
     } else if (tab === "Canjear Puntos") {
       setPlayRewardAnimation(true);
       setTimeout(() => setPlayRewardAnimation(false), 2000);
+    } else if (tab === "Reviews") {
+      setPlayReviewdAnimation(true);
+      setTimeout(() => setPlayReviewdAnimation(false), 2000);
     }
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar hidden={false} backgroundColor="white" barStyle="dark-content"/>
+      <StatusBar
+        hidden={false}
+        backgroundColor="white"
+        barStyle="dark-content"
+      />
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -150,10 +134,7 @@ export default function Dashboard({ navigation }) {
         {/* Menú desplegable en el icono del usuario */}
         <Menu>
           <MenuTrigger>
-            <Image
-              source={require("../../assets/user-icon.png")}
-              style={styles.userIcon}
-            />
+            <UserAvatar name={userName} size={40} />
           </MenuTrigger>
           <MenuOptions customStyles={optionsStyles}>
             <MenuOption onSelect={() => navigation.navigate("EditProfile")}>
@@ -181,7 +162,7 @@ export default function Dashboard({ navigation }) {
         </Menu>
       </View>
 
-      <View style={styles.content}>{renderComponent()}</View>
+      <View style={styles.contentContainer}>{renderComponent()}</View>
 
       {/* Contenido del Dashboard */}
       <View style={styles.bottomMenu}>
@@ -235,7 +216,34 @@ export default function Dashboard({ navigation }) {
               selectedTab === "Mis Entradas" && styles.selectedText,
             ]}
           >
-            Mis Entradas
+            Entradas
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => handleTabChange("Reviews")}
+        >
+          {selectedTab === "Reviews" && playReviewdAnimation ? (
+            <LottieView
+              source={require("../../assets/review-animation.json")}
+              autoPlay
+              loop={false}
+              style={styles.lottieIcon}
+            />
+          ) : (
+            <Image
+              source={require("../../assets/review-icon.png")}
+              style={styles.menuIcon}
+            />
+          )}
+          <Text
+            style={[
+              styles.menuText,
+              selectedTab === "Reviews" && styles.selectedText,
+            ]}
+          >
+            Reviews
           </Text>
         </TouchableOpacity>
 
@@ -262,7 +270,7 @@ export default function Dashboard({ navigation }) {
               selectedTab === "Canjear Puntos" && styles.selectedText,
             ]}
           >
-            Canjear Puntos
+            Puntos
           </Text>
         </TouchableOpacity>
       </View>
@@ -275,6 +283,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1c1c3b",
+  },
+  contentContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingBottom: 80,
   },
   menuOptionContainer: {
     flexDirection: "row",

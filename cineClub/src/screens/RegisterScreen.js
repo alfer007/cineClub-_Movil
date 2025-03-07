@@ -28,6 +28,7 @@ export default function RegisterScreen({ navigation }) {
             nombre: nombre,
             email: email,
             puntos: 0,
+            rol: "usuario",
             createdAt: new Date().toISOString()
          });
 
