@@ -73,7 +73,7 @@ export default function Dashboard({ navigation }) {
   const renderComponent = () => {
     switch (selectedTab) {
       case "Inicio":
-        return <Inicio />;
+        return <Inicio navigation={navigation} />;
       case "Mis Entradas":
         return <MisEntradas />;
       case "Canjear Puntos":

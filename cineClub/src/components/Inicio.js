@@ -6,11 +6,12 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
 
-export default function Inicio() {
+export default function Inicio({ navigation }) {
   const [cines, setCines] = useState([]);
   const [peliculas, setPeliculas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +23,7 @@ export default function Inicio() {
         const peliculasSnap = await getDocs(collection(db, "peliculas"));
 
         // Obtener cines
-        const cinesList = cinesSnap.docs.map((doc) => doc.data());
+        const cinesList = cinesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         setCines(cinesList);
 
         // Películas sin duplicados por título
@@ -49,21 +50,42 @@ export default function Inicio() {
   }, []);
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#fff" style={{ marginTop: 50 }} />;
+    return (
+      <ActivityIndicator size="large" color="#fff" style={{ marginTop: 50 }} />
+    );
   }
 
   return (
     <View style={styles.container}>
+      <View style={styles.introContainer}>
+        <Image
+          source={require("../../assets/logo.png")} // ajusta la ruta si es distinta
+          style={styles.logo}
+        />
+        <Text style={styles.introText}>
+          Explora los cines disponibles, descubre las últimas películas y canjea
+          tus puntos por entradas.
+        </Text>
+      </View>
+
       {/* CINES */}
       <Text style={styles.sectionTitle}>Cines</Text>
       <FlatList
         data={cines}
         horizontal
         keyExtractor={(item, index) => `cine-${index}`}
+        style={{ marginBottom: -140 }} 
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{item.Nombre}</Text>
-            <Text style={styles.cardSubtitle}>{item.Ubicacion}</Text>
+          <View >
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() =>
+                navigation.navigate("CarteleraCine", { cine: item })
+              }
+            >
+              <Text style={styles.cardTitle}>{item.Nombre}</Text>
+              <Text style={styles.cardSubtitle}>{item.Ubicacion}</Text>
+            </TouchableOpacity>
           </View>
         )}
         contentContainerStyle={styles.scrollContainer}
@@ -78,12 +100,19 @@ export default function Inicio() {
         keyExtractor={(item, index) => `peli-${index}`}
         renderItem={({ item }) => (
           <View style={styles.posterCard}>
-            <Image
-              source={{ uri: item.Cartelera }}
-              style={styles.posterImage}
-              resizeMode="cover"
-            />
-            <Text style={styles.posterTitle}>{item.Titulo}</Text>
+            <TouchableOpacity
+              style={styles.posterCard}
+              onPress={() =>
+                navigation.navigate("DetallePelicula", { pelicula: item })
+              }
+            >
+              <Image
+                source={{ uri: item.Cartelera }}
+                style={styles.posterImage}
+                resizeMode="cover"
+              />
+              <Text style={styles.posterTitle}>{item.Titulo}</Text>
+            </TouchableOpacity>
           </View>
         )}
         contentContainerStyle={styles.scrollContainer}
@@ -94,6 +123,34 @@ export default function Inicio() {
 }
 
 const styles = StyleSheet.create({
+  introContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+    paddingHorizontal: 16,
+  },
+  logo: {
+    width: 190,
+    height: 60,
+    resizeMode: "contain",
+    marginBottom: 10,
+  },
+  introText: {
+    color: "#ccc",
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  appName: {
+    color: "white",
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 6,
+  },
+  appDescription: {
+    color: "#ccc",
+    fontSize: 14,
+    lineHeight: 20,
+  },
   container: {
     flex: 1,
     backgroundColor: "#1c1c3b",

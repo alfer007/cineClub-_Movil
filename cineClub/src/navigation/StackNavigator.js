@@ -7,6 +7,9 @@ import RegisterScreen from "../screens/RegisterScreen";
 import Dashboard from "../screens/Dashboard";
 import AuthLoadingScreen from "../screens/AuthLoadingScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
+import DetallePelicula from "../components/Inicio/DetallePelicula";
+import CarteleraCine from "../components/Inicio/CarteleraCine";
+import SeleccionAsientos from "../components/Inicio/SeleccionAsientos";
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +23,9 @@ export default function StackNavigator() {
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Dashboard" component={Dashboard} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+        <Stack.Screen name="DetallePelicula" component={DetallePelicula} />
+        <Stack.Screen name="CarteleraCine" component={CarteleraCine} />
+        <Stack.Screen name="SeleccionAsientos" component={SeleccionAsientos} />
       </Stack.Navigator>
     </NavigationContainer>
   );
