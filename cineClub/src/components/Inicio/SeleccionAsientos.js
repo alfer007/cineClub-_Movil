@@ -10,8 +10,18 @@ import {
   Image,
   Alert,
   Dimensions,
+  TextInput,
 } from "react-native";
-import { doc, updateDoc, getDoc } from "firebase/firestore";
+import {
+  doc,
+  updateDoc,
+  getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
+
 import { db } from "../../../firebaseConfig";
 
 const imagenes = {
@@ -22,8 +32,16 @@ const imagenes = {
 };
 
 export default function SeleccionAsientos({ route, navigation }) {
-  const { sesion, pelicula, userId } = route.params;
+  const { sesion, pelicula, userId, cine } = route.params;
   const [asientosSeleccionados, setAsientosSeleccionados] = useState([]);
+
+  console.log("Email recibido en SeleccionAsientos:", userId);
+
+  const [pagoVisible, setPagoVisible] = useState(false);
+  const [tarjeta, setTarjeta] = useState("");
+  const [caducidad, setCaducidad] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [titular, setTitular] = useState("");
 
   const filas = sesion.SalaInfo.Filas;
   const columnas = sesion.SalaInfo.Columnas;
@@ -56,71 +74,82 @@ export default function SeleccionAsientos({ route, navigation }) {
     return imagenes.libre;
   };
 
-  const pagarYConfirmar = async () => {
+  const pagarYConfirmar = () => {
     if (asientosSeleccionados.length === 0) {
       Alert.alert("Selecciona al menos un asiento.");
       return;
     }
-
-    // Confirmar pago
-    Alert.alert(
-      "Confirmar pago",
-      `¿Deseas pagar ${asientosSeleccionados.length * 7}€ por ${
-        asientosSeleccionados.length
-      } asiento(s)?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Pagar",
-          onPress: async () => {
-            try {
-              // Actualizar matriz local
-              const nuevosAsientos = plano.slice();
-              asientosSeleccionados.forEach((k) => {
-                const [i, j] = k.split("-").map(Number);
-                nuevosAsientos[i * columnas + j] = 2;
-              });
-
-              // Guardar en Firestore
-              await updateDoc(doc(db, "sesiones", sesion.id), {
-                "SalaInfo.Asientos": nuevosAsientos,
-              });
-
-              // Actualizar usuario: puntos + entrada
-              const userRef = doc(db, "usuarios", userId);
-              const userSnap = await getDoc(userRef);
-              const userData = userSnap.data();
-
-              const nuevosPuntos =
-                (userData.puntos || 0) + asientosSeleccionados.length * 50;
-              const nuevaEntrada = {
-                pelicula: pelicula.Titulo,
-                dia: sesion.Dia,
-                hora: sesion.Hora,
-                sala: sesion.SalaInfo.Nombre,
-                isActived: false,
-                cantidad: asientosSeleccionados.length,
-              };
-
-              await updateDoc(userRef, {
-                puntos: nuevosPuntos,
-                entradas: [...(userData.entradas || []), nuevaEntrada],
-              });
-
-              Alert.alert(
-                "¡Reserva completada!",
-                "Tus puntos han sido añadidos."
-              );
-              navigation.popToTop();
-            } catch (error) {
-              console.error("Error al confirmar:", error);
-              Alert.alert("Error", "Hubo un problema al confirmar la reserva.");
-            }
-          },
-        },
-      ]
-    );
+    setPagoVisible(true); // mostrar el formulario
   };
+
+  const confirmarPago = async () => {
+  if (!tarjeta || !caducidad || !cvv || !titular) {
+    Alert.alert("Rellena todos los campos del pago.");
+    return;
+  }
+
+  console.log("---- Iniciando pago ----");
+  console.log("Tarjeta:", tarjeta);
+  console.log("Caducidad:", caducidad);
+  console.log("CVV:", cvv);
+  console.log("Titular:", titular);
+  console.log("Asientos seleccionados:", asientosSeleccionados);
+
+  try {
+    const nuevosAsientos = plano.slice(); 
+    const posiciones = [];
+
+    asientosSeleccionados.forEach((k) => {
+      const [i, j] = k.split("-").map(Number);
+      nuevosAsientos[i * columnas + j] = 2;
+      posiciones.push({ fila: i + 1, columna: j + 1 });
+    });
+
+    console.log("Nuevos asientos planos:", nuevosAsientos);
+    console.log("Posiciones (fila/col):", posiciones);
+
+    await updateDoc(doc(db, "sesiones", sesion.id), {
+      "SalaInfo.Asientos": nuevosAsientos,
+    });
+
+    // Buscar usuario por email
+    const q = query(collection(db, "usuarios"), where("email", "==", userId)); // aquí userId es en realidad el email
+    const snap = await getDocs(q);
+
+    if (snap.empty) {
+      Alert.alert("Usuario no encontrado en Firestore.");
+      return;
+    }
+
+    const userRef = snap.docs[0].ref;
+    const userData = snap.docs[0].data();
+
+    const nuevosPuntos = (userData.puntos || 0) + asientosSeleccionados.length * 50;
+    const nuevaEntrada = {
+      pelicula: pelicula.Titulo,
+      cine: cine.Nombre,
+      dia: sesion.Dia,
+      hora: sesion.Hora,
+      sala: sesion.SalaInfo.Nombre,
+      isActived: false,
+      cantidad: asientosSeleccionados.length,
+      asientos: posiciones,
+    };
+
+    const entradasActuales = userData.entradas || [];
+
+    await updateDoc(userRef, {
+      puntos: nuevosPuntos,
+      entradas: [...entradasActuales, nuevaEntrada],
+    });
+
+    Alert.alert("¡Pago realizado!", "Tus entradas han sido guardadas.");
+    navigation.popToTop();
+  } catch (error) {
+    console.error("Error en el pago:", error);
+    Alert.alert("Error", "No se pudo procesar el pago.");
+  }
+};
 
   return (
     <>
@@ -187,6 +216,48 @@ export default function SeleccionAsientos({ route, navigation }) {
             </View>
           </ScrollView>
 
+          {pagoVisible && (
+            <View style={styles.formularioPago}>
+              <Text style={styles.label}>Número de tarjeta</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={tarjeta}
+                onChangeText={setTarjeta}
+              />
+
+              <Text style={styles.label}>Caducidad (MM/AA)</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="MM/AA"
+                value={caducidad}
+                onChangeText={setCaducidad}
+              />
+
+              <Text style={styles.label}>CVV</Text>
+              <TextInput
+                style={styles.input}
+                keyboardType="numeric"
+                value={cvv}
+                onChangeText={setCvv}
+              />
+
+              <Text style={styles.label}>Titular</Text>
+              <TextInput
+                style={styles.input}
+                value={titular}
+                onChangeText={setTitular}
+              />
+
+              <TouchableOpacity
+                style={styles.botonConfirmar}
+                onPress={confirmarPago}
+              >
+                <Text style={styles.textoBoton}>Confirmar pago</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <TouchableOpacity
             style={styles.botonConfirmar}
             onPress={pagarYConfirmar}
@@ -200,6 +271,25 @@ export default function SeleccionAsientos({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
+  formularioPago: {
+    backgroundColor: "white",
+    padding: 16,
+    borderRadius: 12,
+    marginTop: 20,
+    marginBottom: 30,
+  },
+  label: {
+    color: "#1c1c3b",
+    fontWeight: "bold",
+    marginBottom: 4,
+    fontSize: 14,
+  },
+  input: {
+    backgroundColor: "#eee",
+    borderRadius: 6,
+    padding: 10,
+    marginBottom: 12,
+  },
   header: {
     backgroundColor: "white",
     borderBottomLeftRadius: 20,
@@ -231,7 +321,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: "#1c1c3b", 
+    backgroundColor: "#1c1c3b",
     padding: 16,
   },
   titulo: {

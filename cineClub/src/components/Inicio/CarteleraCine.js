@@ -132,18 +132,26 @@ export default function CarteleraCine({ route, navigation }) {
                         {(agrupado[peliId][dia] || []).map((hora, idx) => (
                           <TouchableOpacity
                             key={idx}
-                            onPress={() =>
+                            onPress={() => {
+                              const sesionSeleccionada = sesiones.find(
+                                (s) =>
+                                  s.PeliculaId === peliId &&
+                                  diasMap[s.Dia] === dia &&
+                                  s.Hora === hora
+                              );
+
+                              if (!sesionSeleccionada) {
+                                console.warn("Sesión no encontrada");
+                                return;
+                              }
+
                               navigation.navigate("SeleccionAsientos", {
-                                sesion: sesiones.find(
-                                  (s) =>
-                                    s.PeliculaId === peliId &&
-                                    diasMap[s.Dia] === dia &&
-                                    s.Hora === hora
-                                ),
+                                sesion: sesionSeleccionada,
                                 pelicula: peliculas[peliId],
-                                userId: userId,
-                              })
-                            }
+                                userId, 
+                                cine: cine,
+                              });
+                            }}
                           >
                             <Text style={styles.hourTag}>{hora}</Text>
                           </TouchableOpacity>

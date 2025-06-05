@@ -9,7 +9,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../firebaseConfig";
+import { db, auth } from "../../firebaseConfig";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function Inicio({ navigation }) {
   const [cines, setCines] = useState([]);
@@ -23,7 +24,10 @@ export default function Inicio({ navigation }) {
         const peliculasSnap = await getDocs(collection(db, "peliculas"));
 
         // Obtener cines
-        const cinesList = cinesSnap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+        const cinesList = cinesSnap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
         setCines(cinesList);
 
         // Películas sin duplicados por título
@@ -74,14 +78,22 @@ export default function Inicio({ navigation }) {
         data={cines}
         horizontal
         keyExtractor={(item, index) => `cine-${index}`}
-        style={{ marginBottom: -140 }} 
+        style={{ marginBottom: -140 }}
         renderItem={({ item }) => (
-          <View >
+          <View>
             <TouchableOpacity
               style={styles.card}
-              onPress={() =>
-                navigation.navigate("CarteleraCine", { cine: item })
-              }
+              onPress={() => {
+                const user = auth.currentUser;
+                if (!user) {
+                  alert("Debes iniciar sesión para continuar");
+                  return;
+                }
+                navigation.navigate("CarteleraCine", {
+                  cine: item,
+                  userId: user.email,
+                });
+              }}
             >
               <Text style={styles.cardTitle}>{item.Nombre}</Text>
               <Text style={styles.cardSubtitle}>{item.Ubicacion}</Text>

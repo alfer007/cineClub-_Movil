@@ -26,6 +26,7 @@ import Inicio from "../components/Inicio";
 import MisEntradas from "../components/MisEntradas";
 import CanjearPuntos from "../components/CanjearPuntos";
 import Reviews from "../components/Reviews";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function Dashboard({ navigation }) {
   const [userUID, setUserUID] = useState(null);
@@ -38,37 +39,39 @@ export default function Dashboard({ navigation }) {
   const [playRewardAnimation, setPlayRewardAnimation] = useState(false);
   const [playReviewdAnimation, setPlayReviewdAnimation] = useState(false);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        let storedUID = await AsyncStorage.getItem("userUID");
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchUserData = async () => {
+        try {
+          let storedUID = await AsyncStorage.getItem("userUID");
 
-        if (!storedUID && auth.currentUser) {
-          storedUID = auth.currentUser.uid;
-        }
-
-        if (storedUID) {
-          const userDocRef = doc(db, "usuarios", storedUID);
-          const userDocSnap = await getDoc(userDocRef);
-
-          if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            setUserName(userData.nombre || "Usuario");
-            setUserPoints(userData.puntos || 0);
-          } else {
-            console.log("No se encontró el usuario en la base de datos");
+          if (!storedUID && auth.currentUser) {
+            storedUID = auth.currentUser.uid;
           }
-          setUserUID(storedUID);
-        }
-      } catch (error) {
-        console.error("Error al obtener datos del usuario:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchUserData();
-  }, []);
+          if (storedUID) {
+            const userDocRef = doc(db, "usuarios", storedUID);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (userDocSnap.exists()) {
+              const userData = userDocSnap.data();
+              setUserName(userData.nombre || "Usuario");
+              setUserPoints(userData.puntos || 0);
+              setUserUID(storedUID);
+            } else {
+              console.log("No se encontró el usuario en la base de datos");
+            }
+          }
+        } catch (error) {
+          console.error("Error al obtener datos del usuario:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchUserData();
+    }, [])
+  );
 
   const renderComponent = () => {
     switch (selectedTab) {
