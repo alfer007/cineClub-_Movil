@@ -8,7 +8,7 @@ export default function RegisterScreen({ navigation }) {
    const [email, setEmail] = useState("");
    const [password, setPassword] = useState("");
    const [nombre, setNombre] = useState("");
-   const [showPassword, setShowPassword] = useState(false); // Estado para ocultar/mostrar contraseña
+   const [showPassword, setShowPassword] = useState(false); 
 
    const handleRegister = async () => {
       if (!nombre || !email || !password) {
@@ -23,7 +23,6 @@ export default function RegisterScreen({ navigation }) {
 
          console.log("Usuario registrado:", user.uid);
 
-         // Guardar usuario en Firestore
          await setDoc(doc(db, "usuarios", user.uid), {
             nombre: nombre,
             email: email,
@@ -33,7 +32,7 @@ export default function RegisterScreen({ navigation }) {
          });
 
          Alert.alert("Registro exitoso", "Bienvenido!");
-         navigation.replace("Dashboard"); // Reemplaza para evitar regresar al registro
+         navigation.replace("Dashboard"); 
 
       } catch (error) {
          console.error("Error al registrar:", error);

@@ -28,6 +28,7 @@ import CanjearPuntos from "../components/CanjearPuntos";
 import Reviews from "../components/Reviews";
 
 export default function Dashboard({ navigation }) {
+  const [userUID, setUserUID] = useState(null);
   const [userName, setUserName] = useState(null);
   const [userPoints, setUserPoints] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -57,6 +58,7 @@ export default function Dashboard({ navigation }) {
           } else {
             console.log("No se encontró el usuario en la base de datos");
           }
+          setUserUID(storedUID);
         }
       } catch (error) {
         console.error("Error al obtener datos del usuario:", error);
@@ -75,7 +77,13 @@ export default function Dashboard({ navigation }) {
       case "Mis Entradas":
         return <MisEntradas />;
       case "Canjear Puntos":
-        return <CanjearPuntos />;
+        return (
+          <CanjearPuntos
+            userPoints={userPoints}
+            userUID={userUID}
+            onUpdatePoints={(newPoints) => setUserPoints(newPoints)}
+          />
+        );
       case "Reviews":
         return <Reviews />;
       default:
