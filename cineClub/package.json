@@ -27,6 +27,7 @@
     "react-native": "0.76.7",
     "react-native-full-screen": "^0.0.4",
     "react-native-gesture-handler": "^2.24.0",
+    "react-native-maps": "1.18.0",
     "react-native-navigation-bar-color": "^2.0.2",
     "react-native-popup-menu": "^0.16.1",
     "react-native-qrcode-svg": "^6.3.15",

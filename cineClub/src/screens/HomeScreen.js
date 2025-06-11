@@ -197,16 +197,6 @@ export default function HomeScreen({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            <TouchableOpacity
-              style={styles.checkboxContainer}
-              onPress={() => setRememberMe(!rememberMe)}
-            >
-              <View
-                style={[styles.checkbox, rememberMe && styles.checkboxChecked]}
-              />
-              <Text style={styles.checkboxLabel}>Mantener sesión iniciada</Text>
-            </TouchableOpacity>
-
             <TouchableOpacity style={styles.button} onPress={handleLogin}>
               <Text style={styles.buttonText}>Ingresar</Text>
             </TouchableOpacity>

@@ -10,6 +10,7 @@ import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import DetallePelicula from "../components/Inicio/DetallePelicula";
 import CarteleraCine from "../components/Inicio/CarteleraCine";
 import SeleccionAsientos from "../components/Inicio/SeleccionAsientos";
+import EditProfile from "../components/User/EditProfile";
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +27,7 @@ export default function StackNavigator() {
         <Stack.Screen name="DetallePelicula" component={DetallePelicula} />
         <Stack.Screen name="CarteleraCine" component={CarteleraCine} />
         <Stack.Screen name="SeleccionAsientos" component={SeleccionAsientos} />
+        <Stack.Screen name="EditProfile" component={EditProfile} />
       </Stack.Navigator>
     </NavigationContainer>
   );

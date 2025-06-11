@@ -164,8 +164,8 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   deleteImage: {
-    width: 20,
-    height: 20,
+    width: 25,
+    height: 25,
   },
   user: { color: "#fff", fontWeight: "bold" },
   movie: { color: "#ccc", fontSize: 13 },
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   text: { color: "#eee", marginBottom: 8 },
   toggleReplies: { color: "#00aaff", marginTop: 4 },
   reply: { paddingLeft: 12, marginTop: 6 },
-  replyUser: { color: "#ffa", fontWeight: "bold" },
+  replyUser: { color: "white", fontWeight: "bold" },
   replyText: { color: "#ddd" },
   replyInput: {
     backgroundColor: "#1c1c3b",

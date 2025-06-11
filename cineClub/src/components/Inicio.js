@@ -7,10 +7,12 @@ import {
   Image,
   ActivityIndicator,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
 import { collection, getDocs } from "firebase/firestore";
 import { db, auth } from "../../firebaseConfig";
 import { useFocusEffect } from "@react-navigation/native";
+import MapView, { Marker } from "react-native-maps";
 
 export default function Inicio({ navigation }) {
   const [cines, setCines] = useState([]);
@@ -61,80 +63,141 @@ export default function Inicio({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.introContainer}>
-        <Image
-          source={require("../../assets/logo.png")} // ajusta la ruta si es distinta
-          style={styles.logo}
-        />
+      <ScrollView
+        contentContainerStyle={styles.scrollViewContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.container2}>
+          <Image
+            source={require("../../assets/logo.png")} // ajusta la ruta si es distinta
+            style={styles.logo}
+          />
+        </View>
         <Text style={styles.introText}>
           Explora los cines disponibles, descubre las últimas películas y canjea
           tus puntos por entradas.
         </Text>
-      </View>
 
-      {/* CINES */}
-      <Text style={styles.sectionTitle}>Cines</Text>
-      <FlatList
-        data={cines}
-        horizontal
-        keyExtractor={(item, index) => `cine-${index}`}
-        style={{ marginBottom: -140 }}
-        renderItem={({ item }) => (
-          <View>
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() => {
-                const user = auth.currentUser;
-                if (!user) {
-                  alert("Debes iniciar sesión para continuar");
-                  return;
+        {/* CINES */}
+        <Text style={styles.sectionTitleCine}>Cines</Text>
+        <FlatList
+          data={cines}
+          horizontal
+          keyExtractor={(item, index) => `cine-${index}`}
+          renderItem={({ item }) => (
+            <View>
+              <TouchableOpacity
+                style={styles.card}
+                onPress={() => {
+                  const user = auth.currentUser;
+                  if (!user) {
+                    alert("Debes iniciar sesión para continuar");
+                    return;
+                  }
+                  navigation.navigate("CarteleraCine", {
+                    cine: item,
+                    userId: user.email,
+                  });
+                }}
+              >
+                <Text style={styles.cardTitle}>{item.Nombre}</Text>
+                <Text style={styles.cardSubtitle}>{item.Ubicacion}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          contentContainerStyle={styles.scrollContainer}
+          showsHorizontalScrollIndicator={false}
+        />
+
+        {/* PELÍCULAS */}
+        <Text style={styles.sectionTitle}>Películas</Text>
+        <FlatList
+          data={peliculas}
+          horizontal
+          keyExtractor={(item, index) => `peli-${index}`}
+          renderItem={({ item }) => (
+            <View style={styles.posterCard}>
+              <TouchableOpacity
+                style={styles.posterCard}
+                onPress={() =>
+                  navigation.navigate("DetallePelicula", { pelicula: item })
                 }
-                navigation.navigate("CarteleraCine", {
-                  cine: item,
-                  userId: user.email,
-                });
-              }}
-            >
-              <Text style={styles.cardTitle}>{item.Nombre}</Text>
-              <Text style={styles.cardSubtitle}>{item.Ubicacion}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        contentContainerStyle={styles.scrollContainer}
-        showsHorizontalScrollIndicator={false}
-      />
+              >
+                <Image
+                  source={{ uri: item.Cartelera }}
+                  style={styles.posterImage}
+                  resizeMode="cover"
+                />
+                <Text style={styles.posterTitle}>{item.Titulo}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          contentContainerStyle={styles.scrollContainer}
+          showsHorizontalScrollIndicator={false}
+        />
 
-      {/* PELÍCULAS */}
-      <Text style={styles.sectionTitle}>Películas</Text>
-      <FlatList
-        data={peliculas}
-        horizontal
-        keyExtractor={(item, index) => `peli-${index}`}
-        renderItem={({ item }) => (
-          <View style={styles.posterCard}>
-            <TouchableOpacity
-              style={styles.posterCard}
-              onPress={() =>
-                navigation.navigate("DetallePelicula", { pelicula: item })
-              }
-            >
-              <Image
-                source={{ uri: item.Cartelera }}
-                style={styles.posterImage}
-                resizeMode="cover"
-              />
-              <Text style={styles.posterTitle}>{item.Titulo}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        contentContainerStyle={styles.scrollContainer}
-        showsHorizontalScrollIndicator={false}
-      />
+        {/* MAPA */}
+        {cines.length > 0 &&
+          cines[0].Coordenadas?.Latitud &&
+          cines[0].Coordenadas?.Longitud && (
+            <>
+              <Text style={styles.sectionTitle}>
+                Encuentra tu cine más cercano
+              </Text>
+
+              {console.log("Coordenadas del mapa:", {
+                latitude: cines[0].Coordenadas.Latitud,
+                longitude: cines[0].Coordenadas.Longitud,
+              })}
+
+              <View style={styles.mapContainer}>
+                <MapView
+                  style={styles.map}
+                  initialRegion={{
+                    latitude: cines[0].Coordenadas.Latitud,
+                    longitude: cines[0].Coordenadas.Longitud,
+                    latitudeDelta: 0.1,
+                    longitudeDelta: 0.1,
+                  }}
+                >
+                  {cines.map(
+                    (cine, index) =>
+                      cine.Coordenadas?.Latitud &&
+                      cine.Coordenadas?.Longitud && (
+                        <Marker
+                          key={`cine-marker-${index}`}
+                          coordinate={{
+                            latitude: cine.Coordenadas.Latitud,
+                            longitude: cine.Coordenadas.Longitud,
+                          }}
+                          title={cine.Nombre}
+                          description={cine.Ubicacion}
+                        />
+                      )
+                  )}
+                </MapView>
+              </View>
+            </>
+          )}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollViewContent: {
+    paddingBottom: 20,
+  },
+  mapContainer: {
+    height: 250,
+    marginHorizontal: 10,
+    borderRadius: 10,
+    overflow: "hidden",
+    marginBottom: 20,
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
   introContainer: {
     alignItems: "center",
     marginBottom: 20,
@@ -163,10 +226,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  container2: {
+    flex: 1,
+    backgroundColor: "#1c1c3b",
+    alignItems: "center"
+  },
   container: {
     flex: 1,
     backgroundColor: "#1c1c3b",
     paddingTop: 20,
+  },
+  sectionTitleCine: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginLeft: 16,
+    marginBottom: 10,
+    marginTop: 20,
   },
   sectionTitle: {
     color: "white",
