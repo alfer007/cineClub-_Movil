@@ -200,7 +200,7 @@ export default function Dashboard({ navigation }) {
               selectedTab === "Inicio" && styles.selectedText,
             ]}
           >
-            Inicios
+            Inicio
           </Text>
         </TouchableOpacity>
 

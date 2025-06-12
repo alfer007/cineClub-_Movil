@@ -81,36 +81,35 @@ export default function HomeScreen({ navigation }) {
   }, []);
 
   const handleLogin = async () => {
-   setIsLoggingIn(true); // Muestra la animación
- 
-   try {
-     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-     const user = userCredential.user;
- 
-     if (rememberMe) {
-       await AsyncStorage.setItem("userUID", user.uid);
-     }
- 
-     // Obtener datos del usuario desde Firestore
-     const userDocRef = doc(db, "usuarios", user.uid);
-     const userDocSnap = await getDoc(userDocRef);
- 
-     if (userDocSnap.exists()) {
-       const userData = userDocSnap.data();
-       setUserName(userData.nombre || "Usuario"); // Si no tiene nombre, muestra "Usuario"
-     }
- 
-     // Espera 2 segundos antes de navegar
-     setTimeout(() => {
-       setIsLoggingIn(false);
-       navigation.replace("Dashboard");
-     }, 2000);
-   } catch (error) {
-     setIsLoggingIn(false);
-     Alert.alert("Error", error.message);
-   }
- };
- 
+  setIsLoggingIn(true);
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    if (rememberMe) {
+      await AsyncStorage.setItem("userUID", user.uid);
+    }
+
+    const userDocRef = doc(db, "usuarios", user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+      setUserName(userData.nombre || "Usuario");
+
+      setTimeout(() => {
+        setIsLoggingIn(false);
+        navigation.replace("Dashboard");
+      }, 2000);
+    } else {
+      setIsLoggingIn(false);
+    }
+  } catch (error) {
+    setIsLoggingIn(false);
+    Alert.alert("Error", "Correo o contraseña incorrectos.");
+  }
+};
 
   const handleLogout = async () => {
     try {
@@ -137,7 +136,7 @@ export default function HomeScreen({ navigation }) {
       {isLoggingIn ? (
         <View style={styles.animationContainer}>
           <LottieView
-            source={require("../../assets/saludo.json")} // Ruta de la animación
+            source={require("../../assets/saludo.json")} 
             autoPlay
             loop={false}
             style={styles.lottie}
